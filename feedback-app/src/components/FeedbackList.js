@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import FeedbackItem from "./FeedbackItem";
 
 function FeedbackList( { feedback, deleteFeedback } ) {
-  if (!feedback || feedback.length == 0) {
+  if (!feedback || feedback.length === 0) {
     return <p>No feedback yet.</p>
   }
 
