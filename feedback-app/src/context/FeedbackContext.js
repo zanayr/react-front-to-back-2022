@@ -1,70 +1,89 @@
-import { createContext, useState } from "react";
-import { uuid } from "../utility/utility";
+import { createContext, useState, useEffect } from "react";
 
 const FeedbackContext = createContext();
 
 export const FeedbackProvider = ({ children }) => {
-  const [ feedback, setFeedback ] = useState([
-    {
-      id: 1,
-      rating: 7,
-      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    },
-    {
-      id: 2,
-      rating: 7,
-      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    },
-    {
-      id: 3,
-      rating: 6,
-      text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-    },
-  ]);
+  const [ isLoading, setIsLoading ] = useState(true);
+  const [ feedback, setFeedback ] = useState([]);
   const [ feedbackEdit, setFeedbackEdit ] = useState({
     item: {},
-    edit: false,
+    edit: false
   });
 
+  useEffect(() => {
+    setIsLoading(true);
+    fetchFeedback();
+  }, []);
+
+  // Fetch feedback
+  const fetchFeedback = async () => {
+    const response = await fetch(`/feedback?_sort=id&_order=desc`);
+    
+    const data = await response.json();
+
+    setFeedback(data);
+    setIsLoading(false);
+  };
+
   // Delete feedback
-  const deleteFeedback = (id) => {
+  const deleteFeedback = async (id) => {
     if (window.confirm("Are you sure you want to delete?")) {
+      await fetch(`/feedback/${id}`, { method: "DELETE" });
+
       setFeedback(feedback.filter(item => item.id !== id));
     }
   };
 
   // Add feedback
-  const addFeedback = newFeedback => {
-    newFeedback.id = uuid();
-    setFeedback([
-      newFeedback,
-      ...feedback,
-    ]);
+  const addFeedback = async newFeedback => {
+    const response = await fetch(`/feedback`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newFeedback),
+    });
+
+    const data = await response.json();
+
+    setFeedback([data, ...newFeedback]);
   };
 
-    // Edit feedback
-    const editFeedback = item => {
-      setFeedbackEdit({
-        item,
-        edit: true,
-      });
-    };
+  // Edit feedback
+  const editFeedback = item => {
+    setFeedbackEdit({
+      item,
+      edit: true,
+    });
+  };
 
-    const updateFeedback = (id, next) => {
-      setFeedback(feedback.map(prev => prev.id === id ? { ...prev, ...next } : prev));
-    };
+  const updateFeedback = async (id, next) => {
+    const response = await fetch(`/feedback/${id}`, {
+      method: "PUT",
+      header: {
+        "Content-Type": "application/json",
+        body: JSON.stringify(next),
+      }
+    });
+
+    const data = await response.json();
+    setFeedback(feedback.map(prev => prev.id === id ? { ...prev, ...data } : prev));
+  };
   
-  return <FeedbackContext.Provider
-  value={{
-    feedback,
-    feedbackEdit,
-    deleteFeedback,
-    addFeedback,
-    editFeedback,
-    updateFeedback,
-  }}>
-    { children }
-  </FeedbackContext.Provider>
+  return (
+    <FeedbackContext.Provider
+      value={{
+        feedback,
+        feedbackEdit,
+        isLoading,
+        deleteFeedback,
+        addFeedback,
+        editFeedback,
+        updateFeedback,
+      }}>
+      { children }
+    </FeedbackContext.Provider>
+  );
 }
 
 export default FeedbackContext;
