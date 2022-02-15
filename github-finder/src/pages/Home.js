@@ -1,8 +1,13 @@
+import UserResults from "../components/users/UserResults.js";
+import UserSearch from "../components/users/UserSearch.js";
+
 function Home() {
   return (
-    <div>
-      <h1 className="text-6xl">Welcome</h1>
-    </div>
+    <>
+      {/* SEARCH COMPONENT */}
+      <UserSearch />
+      <UserResults />
+    </>
   );
 }
 
