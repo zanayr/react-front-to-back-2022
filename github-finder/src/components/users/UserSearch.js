@@ -1,18 +1,20 @@
 import { useState, useContext } from "react";
 import GitHubContext from "../../context/github/GitHubContext.js";
+import AlertContext from "../../context/alert/AlertContext.js";
 
 function UserSearch() {
   const [ text, setText ] = useState("");
-  const { users, search, clear } = useContext(GitHubContext);
+  const { users, getUsers, clearUsers } = useContext(GitHubContext);
+  const { setAlert } = useContext(AlertContext);
 
   const handleOnChange = e => setText(e.target.value);
   const handleOnSubmit = e => {
     e.preventDefault();
 
     if (text === "") {
-      alert("Please enter something");
+      setAlert("Please enter something", "error");
     } else {
-      search(text);
+      getUsers(text);
       setText("");
     }
   }
@@ -30,14 +32,14 @@ function UserSearch() {
                 placeholder="search"
                 value={ text }
                 onChange={ handleOnChange }/>
-              <button class="absolute top-0 right-0 rounded-l-none w-36 btn btn-lg" type="submit">Go</button>
+              <button className="absolute top-0 right-0 rounded-l-none w-36 btn btn-lg" type="submit">Go</button>
             </div>
           </div>
         </form>
       </div>
       { users.length > 0 && (
         <div>
-          <button className="btn btn-ghost btn-lg" onClick={ clear }>Clear</button>
+          <button className="btn btn-ghost btn-lg" onClick={ clearUsers }>Clear</button>
         </div>
       )}
     </div>
