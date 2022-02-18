@@ -3,11 +3,12 @@ import { useEffect, useContext } from "react";
 import { Link, useParams } from "react-router-dom";
 import GitHubContext from "../context/github/GitHubContext.js";
 
+import { getUserData } from "../context/github/GitHubActions.js";
 import RepoList from "../components/repos/RepoList.js";
 import Spinner from "../components/layout/Spinner.js";
 
 function User() {
-  const { getUser, user, isLoading, getRepos, repos } = useContext(GitHubContext);
+  const { user, isLoading, repos, dispatch } = useContext(GitHubContext);
   const params = useParams();
   const {
     name,
@@ -27,9 +28,14 @@ function User() {
   } = user;
 
   useEffect(() => {
-    getUser(params.login);
-    getRepos(params.login);
-  }, []);
+    dispatch({ type: "IS_LOADING" });
+    const getData = async () => {
+      const data = await getUserData(params.login);
+      dispatch({ type: "GET_USER_DATA", payload: data });
+    };
+
+    getData();
+  }, [ dispatch, params.login ]);
   
   if (isLoading) {
     return (<Spinner />);
@@ -45,7 +51,7 @@ function User() {
         <div className="custom-card-image mb-6 md:mb-0">
           <div className="rounded-lg shadow-xl card image-full">
             <figure>
-              <img src={ avatar_url } alt="user profile picture" />
+              <img src={ avatar_url } alt="user profile" />
             </figure>
             <div className="card-body justify-end">
               <h2 className="card-title mb-0">{ name }</h2>
